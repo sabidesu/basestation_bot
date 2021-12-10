@@ -2,6 +2,7 @@
 import tweepy # needed for interacting w/ twitter
 import urllib.request # used to download website
 import re # used to find necessary part of website
+import datetime # used for making tweets unique
 import credentials as creds # contains twitter dev acct creds
 
 # create twitter client
@@ -17,9 +18,11 @@ regex = r"\$149.00<\/div><divclass=\"btn_addtocart\"><spanclass=\".*\">" \
 	+ "<span>(.*)<\/span>(<\/div>){4,}"
 finder = re.compile(regex)
 
-# generate tweet based on information
+# generate tweet based on found info
 status = "no" if finder.search(text).group(1) == "OutofStock" else "YES!"
+timestamp = datetime.datetime.now().time().isoformat("seconds")
+tweet = status + " as of " + timestamp
 try:
-	acct.create_tweet(text="no")
+	acct.create_tweet(text=tweet)
 except tweepy.errors.Forbidden:
-	acct.create_tweet(text="status unknown")
+	acct.create_tweet(text="status unknown as of " + timestamp)
