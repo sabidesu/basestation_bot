@@ -13,7 +13,8 @@ acct = tweepy.Client(creds.BEARER_TOKEN, creds.CONSUMER_KEY, \
 print("[" + datetime.datetime.now().time().isoformat("seconds") + "]" + \
 	" twitter client created, entering main loop")
 
-intervals = 4 # keeps track of how many tweets
+polls = 60 # keeps track of polls per hour
+POLLS_PER_HOUR = 60 # how many times to check an hour
 while True:
 	print("[" + datetime.datetime.now().time().isoformat("seconds") + "]" + \
 		" checking status of base stations")
@@ -35,16 +36,18 @@ while True:
 	tweet = status + " as of " + timestamp
 	try:
 		# only tweet "no" if it's been an hour since the last one
-		if status == "no" and intervals == 4:
+		if status == "no" and polls == POLLS_PER_HOUR:
 			acct.create_tweet(text=tweet)
-			intervals = 0
+			polls = 0
 		# if hasn't been hour, increase interval
 		elif status == "no":
-			intervals += 1
-		# tweet "YES!" whenever applies, reset intervals if necessary
-		else:
+			polls += 1
+		# tweet "YES!" every 10 min if applies, reset intervals if necessary
+		elif polls % 10 == 0:
 			acct.create_tweet(tweet=text)
-			intervals = 0 if intervals == 4 else intervals + 1
+			polls = 0
+		else:
+			polls += 1
 		print("[" + datetime.datetime.now().time().isoformat("seconds") + \
 			"] status update successful")
 	except tweepy.errors.Forbidden:
@@ -52,4 +55,4 @@ while True:
 		print("[" + datetime.datetime.now().time().isoformat("seconds") + \
 			"] status update failed")
 	
-	time.sleep(900) # only tweet at max every 15 minutes
+	time.sleep(60) # check every minute
