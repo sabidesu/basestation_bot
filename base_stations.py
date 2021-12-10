@@ -36,7 +36,7 @@ while True:
 		# tweet "YES!" whenever applies, reset intervals if necessary
 		else:
 			acct.create_tweet(tweet=text)
-			intervals = (intervals % 4) + 1
+			intervals = 0 if intervals == 4 else intervals + 1
 	except tweepy.errors.Forbidden:
 		acct.create_tweet(text="status unknown as of " + timestamp)
 	
