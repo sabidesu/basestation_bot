@@ -17,6 +17,8 @@ polls = 60 # keeps track of polls per hour
 POLLS_PER_HOUR = 60 # how many times to check an hour
 while True:
 	print("[" + datetime.datetime.now().time().isoformat("seconds") + "]" + \
+		" polls = " + polls)
+	print("[" + datetime.datetime.now().time().isoformat("seconds") + "]" + \
 		" checking status of base stations")
 
 	# parse website for information
@@ -38,18 +40,18 @@ while True:
 		# only tweet "no" if it's been an hour since the last one
 		if status == "no" and polls == POLLS_PER_HOUR:
 			acct.create_tweet(text=tweet)
-			polls = 0
+			polls = 1
 		# if hasn't been hour, increase interval
 		elif status == "no":
 			polls += 1
 		# tweet "YES!" every 10 min if applies, reset intervals if necessary
 		elif polls % 10 == 0:
 			acct.create_tweet(tweet=text)
-			polls = 0
+			polls = 1
+			print("[" + datetime.datetime.now().time().isoformat("seconds") + \
+				"] status update successful")
 		else:
 			polls += 1
-		print("[" + datetime.datetime.now().time().isoformat("seconds") + \
-			"] status update successful")
 	except tweepy.errors.Forbidden:
 		acct.create_tweet(text="status unknown as of " + timestamp)
 		print("[" + datetime.datetime.now().time().isoformat("seconds") + \
