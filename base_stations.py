@@ -10,8 +10,14 @@ import credentials as creds # contains twitter dev acct creds
 acct = tweepy.Client(creds.BEARER_TOKEN, creds.CONSUMER_KEY, \
 	creds.CONSUMER_SECRET, creds.ACCESS_KEY, creds.ACCESS_SECRET)
 
+print("[" + datetime.datetime.now().time() + "]" + \
+	"twitter client created, entering main loop")
+
 intervals = 0 # keeps track of how many tweets
 while True:
+	print("[" + datetime.datetime.now().time() + "]" + \
+		" checking status of base stations")
+
 	# parse website for information
 	url = "https://store.steampowered.com/valveindex"
 	s = urllib.request.urlopen(url)
@@ -23,6 +29,8 @@ while True:
 
 	# generate tweet based on found info
 	status = "no" if finder.search(text).group(1) == "OutofStock" else "YES!"
+	print("[" + datetime.datetime.now().time() + "]" + " result was " + \
+		finder.search(text).group(1))
 	timestamp = datetime.datetime.now().time().isoformat("seconds")
 	tweet = status + " as of " + timestamp
 	try:
@@ -37,7 +45,11 @@ while True:
 		else:
 			acct.create_tweet(tweet=text)
 			intervals = 0 if intervals == 4 else intervals + 1
+		print("[" + datetime.datetime.now().time() + "]" + \
+			"status update successful")
 	except tweepy.errors.Forbidden:
 		acct.create_tweet(text="status unknown as of " + timestamp)
+		print("[" + datetime.datetime.now().time() + "]" + \
+			"status update failed")
 	
 	time.sleep(900) # only tweet at max every 15 minutes
