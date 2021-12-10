@@ -10,15 +10,15 @@ import credentials as creds # contains twitter dev acct creds
 acct = tweepy.Client(creds.BEARER_TOKEN, creds.CONSUMER_KEY, \
 	creds.CONSUMER_SECRET, creds.ACCESS_KEY, creds.ACCESS_SECRET)
 
-print("[" + datetime.datetime.now().time().isoformat("seconds") + "]" + \
+print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" + \
 	" twitter client created, entering main loop")
 
 polls = 60 # keeps track of polls per hour
 POLLS_PER_HOUR = 60 # how many times to check an hour
 while True:
-	print("[" + datetime.datetime.now().time().isoformat("seconds") + "]" + \
-		" polls = " + polls)
-	print("[" + datetime.datetime.now().time().isoformat("seconds") + "]" + \
+	print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" + \
+		f" polls = {polls}")
+	print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" + \
 		" checking status of base stations")
 
 	# parse website for information
@@ -32,10 +32,10 @@ while True:
 
 	# generate tweet based on found info
 	status = "no" if finder.search(text).group(1) == "OutofStock" else "YES!"
-	print("[" + datetime.datetime.now().time().isoformat("seconds") + "]" \
-		+ " result was " + finder.search(text).group(1))
+	print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" \
+		+ f" result was {finder.search(text).group(1)}")
 	timestamp = datetime.datetime.now().time().isoformat("seconds")
-	tweet = status + " as of " + timestamp
+	tweet = f"{status} as of {timestamp}"
 	try:
 		# only tweet "no" if it's been an hour since the last one
 		if status == "no" and polls == POLLS_PER_HOUR:
@@ -48,13 +48,13 @@ while True:
 		elif polls % 10 == 0:
 			acct.create_tweet(tweet=text)
 			polls = 1
-			print("[" + datetime.datetime.now().time().isoformat("seconds") + \
-				"] status update successful")
+			print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" \
+				+ " status update successful")
 		else:
 			polls += 1
 	except tweepy.errors.Forbidden:
-		acct.create_tweet(text="status unknown as of " + timestamp)
-		print("[" + datetime.datetime.now().time().isoformat("seconds") + \
-			"] status update failed")
+		acct.create_tweet(text=f"status unknown as of {timestamp}")
+		print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" \
+			+ " status update failed")
 	
 	time.sleep(60) # check every minute
