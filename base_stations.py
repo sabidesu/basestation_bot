@@ -10,6 +10,7 @@ import credentials as creds # contains twitter dev acct creds
 acct = tweepy.Client(creds.BEARER_TOKEN, creds.CONSUMER_KEY, \
 	creds.CONSUMER_SECRET, creds.ACCESS_KEY, creds.ACCESS_SECRET)
 
+intervals = 0 # keeps track of how many tweets
 while True:
 	# parse website for information
 	url = "https://store.steampowered.com/valveindex"
@@ -25,7 +26,17 @@ while True:
 	timestamp = datetime.datetime.now().time().isoformat("seconds")
 	tweet = status + " as of " + timestamp
 	try:
-		acct.create_tweet(text=tweet)
+		# only tweet "no" if it's been an hour since the last one
+		if status == "no" and intervals == 4:
+			acct.create_tweet(text=tweet)
+			intervals = 0
+		# if hasn't been hour, increase interval
+		elif status == "no":
+			intervals += 1
+		# tweet "YES!" whenever applies, reset intervals if necessary
+		else:
+			acct.create_tweet(tweet=text)
+			intervals = (intervals % 4) + 1
 	except tweepy.errors.Forbidden:
 		acct.create_tweet(text="status unknown as of " + timestamp)
 	
