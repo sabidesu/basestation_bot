@@ -29,6 +29,11 @@ while True:
 	regex = r"\$149.00<\/div><divclass=\"btn_addtocart\"><spanclass=\".*\">" \
 		+ "<span>(.*)<\/span>(<\/div>){4,}"
 	finder = re.compile(regex)
+	if (not finder.search(text).group(1)):
+		acct.create_tweet("couldn't get status as of" \
+			+ f"{datetime.datetime.now().time().isoformat('seconds')}")
+		print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" \
+			+ " couldn't get status")
 
 	# generate tweet based on found info
 	status = "no" if finder.search(text).group(1) == "OutofStock" else "YES!"
@@ -37,24 +42,17 @@ while True:
 	timestamp = datetime.datetime.now().time().isoformat("seconds")
 	tweet = f"{status} as of {timestamp}"
 	try:
-		# only tweet "no" if it's been an hour since the last one
-		if status == "no" and polls == POLLS_PER_HOUR:
-			acct.create_tweet(text=tweet)
-			polls = 1
-		# if hasn't been hour, increase interval
-		elif status == "no":
-			polls += 1
 		# tweet "YES!" every 10 min if applies, reset intervals if necessary
-		elif polls % 10 == 0:
+		if status == "YES!" and polls % 10 == 0:
 			acct.create_tweet(tweet=text)
-			polls = 1
+			polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
 			print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" \
 				+ " status update successful")
 		else:
-			polls += 1
+			polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
 	except tweepy.errors.Forbidden:
 		acct.create_tweet(text=f"status unknown as of {timestamp}")
 		print(f"[{datetime.datetime.now().time().isoformat('seconds')}]" \
 			+ " status update failed")
 	
-	time.sleep(60) # check every minute
+	time.sleep(3600 / POLLS_PER_HOUR) # check every minute
