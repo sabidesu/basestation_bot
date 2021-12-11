@@ -22,8 +22,8 @@ while True:
 	print(f"[{current_time()}] polls = {polls}")
 	print(f"[{current_time()}] checking status of base stations")
 
-	# parse website for information
 	try:
+		# parse website for information
 		url = "https://store.steampowered.com/valveindex"
 		s = urllib.request.urlopen(url)
 		text = s.read().decode("utf-8").replace("\r\n", "").replace("\t", "") \
@@ -34,30 +34,26 @@ while True:
 		if (not finder.search(text).group(1)):
 			acct.create_tweet(f"couldn't get status as of {current_time()}")
 			print(f"[{current_time()}] couldn't get status")
+
+		# generate tweet based on found info
+		status = "no" if finder.search(text).group(1) == "OutofStock" else "YES!"
+		print(f"[{current_time()}] result was {finder.search(text).group(1)}")
+		timestamp = current_time()
+		tweet = f"{status} as of {timestamp}"
+
+		# tweet "YES!" every 10 min if applies, reset intervals if necessary
+		if status == "YES!" and polls % 10 == 0:
+			acct.create_tweet(tweet=text)
+			print(f"[{current_time()}] status update successful")
 	# if unable to parse website for some reason, tweet/log error and wait
 	except urllib.error.URLError:
 		acct.create_tweet(f"couldn't reach website on {current_time()}, " \
 			+ "attempting next poll")
 		print(f"[{current_time()}] can't reach website, attempting next poll")
-		polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
-		time.sleep(3600 / POLLS_PER_HOUR)
-		continue
-
-	# generate tweet based on found info
-	status = "no" if finder.search(text).group(1) == "OutofStock" else "YES!"
-	print(f"[{current_time()}] result was {finder.search(text).group(1)}")
-	timestamp = current_time()
-	tweet = f"{status} as of {timestamp}"
-	try:
-		# tweet "YES!" every 10 min if applies, reset intervals if necessary
-		if status == "YES!" and polls % 10 == 0:
-			acct.create_tweet(tweet=text)
-			polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
-			print(f"[{current_time()}] status update successful")
-		else:
-			polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
+	# if not able to send tweet, log error and compose error tweet
 	except tweepy.errors.Forbidden:
 		acct.create_tweet(text=f"status unknown as of {timestamp}")
 		print(f"[{current_time()}] status update failed")
 	
+	polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
 	time.sleep(3600 / POLLS_PER_HOUR) # check every minute
