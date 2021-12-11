@@ -34,11 +34,14 @@ while True:
 		if (not finder.search(text).group(1)):
 			acct.create_tweet(f"couldn't get status as of {current_time()}")
 			print(f"[{current_time()}] couldn't get status")
+	# if unable to parse website for some reason, tweet/log error and wait
 	except urllib.error.URLError:
 		acct.create_tweet(f"couldn't reach website on {current_time()}, " \
 			+ "attempting next poll")
 		print(f"[{current_time()}] can't reach website, attempting next poll")
 		polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
+		time.sleep(3600 / POLLS_PER_HOUR)
+		continue
 
 	# generate tweet based on found info
 	status = "no" if finder.search(text).group(1) == "OutofStock" else "YES!"
