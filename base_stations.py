@@ -47,7 +47,11 @@ while True:
 			print(f"[{current_time()}] status update successful")
 	# if unable to parse website for some reason, tweet/log error and wait
 	except urllib.error.URLError:
-		acct.create_tweet(f"couldn't reach website on {current_time()}, " \
+		acct.create_tweet(text=f"couldn't reach website on {current_time()}, " \
+			+ f"attempting next poll")
+		print(f"[{current_time()}] can't reach website, attempting next poll")
+	except urllib.error.HTTPError:
+		acct.create_tweet(text=f"couldn't reach website on {current_time()}, " \
 			+ "attempting next poll")
 		print(f"[{current_time()}] can't reach website, attempting next poll")
 	# if not able to send tweet, log error and compose error tweet
