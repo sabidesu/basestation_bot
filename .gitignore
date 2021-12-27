@@ -1,2 +1,5 @@
 # ignore pycache
 __pycache__
+
+# ignore debug.log
+debug.log

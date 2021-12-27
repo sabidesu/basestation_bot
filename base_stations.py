@@ -10,11 +10,18 @@ import credentials as creds # contains twitter dev acct creds
 def current_time():
 	return datetime.datetime.now().time().isoformat("seconds")
 
+# function for printing and writing the status to txt file
+def write_status(status):
+	print(status)
+	f = open("bot_status.txt", "a") # create file for bot status
+	f.write(status)
+	f.close()
+
 # create twitter client
 acct = tweepy.Client(creds.BEARER_TOKEN, creds.CONSUMER_KEY, \
 	creds.CONSUMER_SECRET, creds.ACCESS_KEY, creds.ACCESS_SECRET)
 
-print(f"[{current_time()}] twitter client created, entering main loop")
+write_status(f"[{current_time()}] twitter client created, entering main loop")
 
 polls = 60 # keeps track of polls per hour
 POLLS_PER_HOUR = 60 # how many times to check an hour
@@ -32,8 +39,7 @@ while True:
 			+ r"\"><span>(.*)<\/span>(<\/div>){4,}"
 		finder = re.compile(regex)
 		if (not finder.search(text).group(1)):
-			acct.create_tweet(f"couldn't get status as of {current_time()}")
-			print(f"[{current_time()}] couldn't get status")
+			write_status(f"[{current_time()}] WARNING: couldn't get status")
 
 		# generate tweet based on found info
 		status = "no" if finder.search(text).group(1) == "OutofStock" else "YES!"
@@ -45,19 +51,15 @@ while True:
 		if status == "YES!" and polls % 10 == 0:
 			acct.create_tweet(tweet=text)
 			print(f"[{current_time()}] status update successful")
-	# if unable to parse website for some reason, tweet/log error and wait
-	except urllib.error.URLError:
-		acct.create_tweet(text=f"couldn't reach website on {current_time()}, " \
-			+ f"attempting next poll")
-		print(f"[{current_time()}] can't reach website, attempting next poll")
-	except urllib.error.HTTPError:
-		acct.create_tweet(text=f"couldn't reach website on {current_time()}, " \
-			+ "attempting next poll")
-		print(f"[{current_time()}] can't reach website, attempting next poll")
-	# if not able to send tweet, log error and compose error tweet
-	except tweepy.errors.Forbidden:
-		acct.create_tweet(text=f"status unknown as of {timestamp}")
-		print(f"[{current_time()}] status update failed")
+	# if unable to parse website for some reason, log error and wait
+	except urllib.error.URLError as e:
+		write_status(f"[{current_time()}] ERROR: {e}") 
+	except urllib.error.HTTPError as e:
+		write_status(f"[{current_time()}] ERROR: {e}") 
+	except tweepy.errors.Forbidden as e:
+		write_status(f"[{current_time()}] ERROR: couldn't send tweet, {e}")
+	except http.client.IncompleteRead as e:
+		write_status(f"[{current_time()}] ERROR: site download failed, {e}")
 	
 	polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
 	time.sleep(3600 / POLLS_PER_HOUR) # check every minute
