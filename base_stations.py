@@ -14,7 +14,7 @@ def current_time():
 def write_status(status):
 	print(status)
 	f = open("bot_status.txt", "a") # create file for bot status
-	f.write(status)
+	f.write(status + "\n")
 	f.close()
 
 # create twitter client
