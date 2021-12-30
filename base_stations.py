@@ -58,8 +58,8 @@ while True:
 		write_status(f"[{current_time()}] ERROR: {e}") 
 	except tweepy.errors.Forbidden as e:
 		write_status(f"[{current_time()}] ERROR: couldn't send tweet, {e}")
-	except http.client.IncompleteRead as e:
-		write_status(f"[{current_time()}] ERROR: site download failed, {e}")
+	except e:
+		write_status(f"[{current_time()}] ERROR: another error occurred, {e}")
 	
 	polls = 1 if polls % POLLS_PER_HOUR == 0 else polls + 1
 	time.sleep(3600 / POLLS_PER_HOUR) # check every minute
