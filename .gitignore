@@ -3,3 +3,6 @@ __pycache__
 
 # ignore debug.log
 debug.log
+
+# ignore credentials
+credentials.py
